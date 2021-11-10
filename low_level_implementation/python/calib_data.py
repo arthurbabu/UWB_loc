@@ -25,7 +25,7 @@ def readDistance(ser):
     return int(line_str)
 
 ser = serial.Serial(
-    port='/dev/cu.usbmodem0007600390051',\
+    port='/dev/cu.usbmodem0007600442391',\
     baudrate=115200,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\

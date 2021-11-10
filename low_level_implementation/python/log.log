@@ -204,3 +204,20 @@ INFO mean :1736.52
 INFO std :23.336015083985526
 INFO min :1688
 INFO max :1782
+INFO ###############################################################
+INFO Distance réelle : 1200
+INFO axe D1 :
+INFO mean :897.2727272727273
+INFO std :30.80824308617635
+INFO min :844
+INFO max :1013
+INFO axe D2 :
+INFO mean :9567.081632653062
+INFO std :34.75707928753149
+INFO min :9474
+INFO max :9662
+INFO axe D3 :
+INFO mean :10171.9
+INFO std :43.58910414312274
+INFO min :10074
+INFO max :10281

@@ -1,12 +1,13 @@
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
+from threading import Thread
+import matplotlib.animation as animation
 
 ### PARAMETERS ###
 
-anchor_x = [0,6000,0]       # Anchors X position
-anchor_y = [0,0,4000]       # Anchors Y position
-
+anchor_x = [0,10000,10000]       # Anchors X position
+anchor_y = [0,0,6600]       # Anchors Y position
 
 def trilaterate(anchor_x, anchor_y, anchor1, anchor2, anchor3):
     """
@@ -52,8 +53,85 @@ def readDistance(ser):
 
     return int(line_str)
 
+X = []
+Y = []
+DIST = [0,0,0]
+
+class datas_collect(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        global X
+        global Y
+        global DIST
+        ser = serial.Serial(
+            port='/dev/cu.usbmodem0007600442391',\
+            baudrate=115200,\
+            parity=serial.PARITY_NONE,\
+            stopbits=serial.STOPBITS_ONE,\
+            bytesize=serial.EIGHTBITS,\
+                timeout=0)
+
+        print("connected to: " + ser.portstr)
+
+        line = []
+
+        distances = {}
+        distances['D1'] = -1
+        distances['D2'] = -1
+        distances['D3'] = -1
+
+        tag = [0,0]
+        tags = [[0,0],[0,0],[0,0]]
+
+        temp_X = 0
+        temp_Y = 0
+        temp_dist = [0, 0, 0]
+        temp_cpt = 0
+
+        while 1:
+            for c in ser.read():
+                c = chr(c)
+                line.append(c)
+                if c == '\n':
+                    line.pop(-1)
+                    line_str = ''.join(line)
+                    if line_str=='D1':
+                        distances['D1'] = readDistance(ser)
+                    if line_str=='D2':
+                        distances['D2'] = readDistance(ser)
+                    if line_str=='D3':
+                        distances['D3'] = readDistance(ser)
+                        tag = trilaterate(anchor_x, anchor_y, distances['D1'], distances['D2'], distances['D3'])
+                        print(tag)
+                        print(distances)
+                        if temp_cpt < 3:
+                            temp_X += tag[0]
+                            temp_Y += tag[1]
+                            temp_dist[0] += distances['D1']
+                            temp_dist[1] += distances['D2']
+                            temp_dist[2] += distances['D3']
+                            temp_cpt += 1
+                        else:
+                            temp_cpt = 0
+                            X.append(temp_X/3)
+                            Y.append(temp_Y/3)
+                            temp_X = 0
+                            temp_Y = 0
+                            DIST[0] = temp_dist[0]/3
+                            DIST[1] = temp_dist[1]/3
+                            DIST[2] = temp_dist[2]/3
+                            temp_dist[0] = 0
+                            temp_dist[1] = 0
+                            temp_dist[2] = 0
+
+
+                    line = []
+
+'''
 ser = serial.Serial(
-    port='/dev/cu.usbmodem0007600390051',\
+    port='/dev/cu.usbmodem0007600442391',\
     baudrate=115200,\
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
@@ -104,8 +182,34 @@ plt.show()
 X = np.array(X)
 Y = np.array(Y)
 
+'''
 
+# Création des threads
+thread_1 = datas_collect()
 
+# Lancement des threads
+thread_1.start()
+
+fig = plt.figure() # initialise la figure
+plt.scatter(anchor_x,anchor_y, color='red')
+circles_line_1 = plt.Circle((anchor_x[0],anchor_y[0]),1000)
+circles_line_2 = plt.Circle((anchor_x[1],anchor_y[1]),0)
+circles_line_3 = plt.Circle((anchor_x[2],anchor_y[2]),0)
+line, = plt.plot([], [])
+
+plt.xlim(-2000, 11000)
+plt.ylim(-2000, 8000)
+
+def animate(i):
+    line.set_data(X, Y)
+    circles_line_1.set_radius(DIST[0])
+    circles_line_2.set_radius(DIST[1])
+    circles_line_3.set_radius(DIST[2])
+    return line,
+
+ani = animation.FuncAnimation(fig, animate, frames=1000, blit=True, interval=500, repeat=False)
+
+plt.show()
 
 
 
