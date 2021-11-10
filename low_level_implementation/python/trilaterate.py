@@ -1,23 +1,12 @@
 import serial
-import time
-import threading
-
-import math
-from sklearn.metrics import euclidean_distances
-import numpy as np
-
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-import random
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
-import matplotlib.image as mpimg
+### PARAMETERS ###
 
-import logging as log
+anchor_x = [0,6000,0]       # Anchors X position
+anchor_y = [0,0,4000]       # Anchors Y position
 
-log.basicConfig(filename='log.log', encoding='utf-8', level=log.INFO, format="%(levelname)s %(message)s")
 
 def trilaterate(anchor_x, anchor_y, anchor1, anchor2, anchor3):
     """
@@ -72,6 +61,7 @@ ser = serial.Serial(
         timeout=0)
 
 print("connected to: " + ser.portstr)
+
 count=1
 line = []
 
@@ -80,13 +70,10 @@ distances['D1'] = -1
 distances['D2'] = -1
 distances['D3'] = -1
 
-anchor_x = [0,6000,0]
-anchor_y = [0,0,4000]
 tag = [0,0]
 tags = [[0,0],[0,0],[0,0]]
 X = []
 Y = []
-D = [[],[],[]]
 cpt = 0
 
 while cpt < 100:
@@ -103,21 +90,8 @@ while cpt < 100:
             if line_str=='D3':
                 distances['D3'] = readDistance(ser)
                 tag = trilaterate(anchor_x, anchor_y, distances['D1'], distances['D2'], distances['D3'])
-                D[0].append(distances['D1'])
-                D[1].append(distances['D2'])
-                D[2].append(distances['D3'])
                 print(tag)
                 print(distances)
-                #tags.pop(0)
-                #tags.append(tag)
-                #x = 0
-                #y = 0
-                #for e in tags:
-                #    x+=e[0]
-                #    y+=e[1]
-
-                #X.append(x/len(tags))
-                #Y.append(y/len(tags))
                 X.append(tag[0])
                 Y.append(tag[1])
                 cpt+=1
@@ -130,38 +104,7 @@ plt.show()
 X = np.array(X)
 Y = np.array(Y)
 
-D[0].pop(0)
-D[1].pop(0)
-D[1].pop(0)
-real_dist = 1200
 
-log.info("###############################################################")
-log.info('Distance réelle : '+str(real_dist))
-log.info('axe X :')
-log.info('mean :'+str(np.mean(X)))
-log.info('std :'+str(np.std(X)))
-log.info('min :'+str(np.min(X)))
-log.info('max :'+str(np.max(X)))
-log.info('axe Y :')
-log.info('mean :'+str(np.mean(Y)))
-log.info('std :'+str(np.std(Y)))
-log.info('min :'+str(np.min(Y)))
-log.info('max :'+str(np.max(Y)))
-log.info('axe D1 :')
-log.info('mean :'+str(np.mean(D[0])))
-log.info('std :'+str(np.std(D[0])))
-log.info('min :'+str(np.min(D[0])))
-log.info('max :'+str(np.max(D[0])))
-log.info('axe D2 :')
-log.info('mean :'+str(np.mean(D[1])))
-log.info('std :'+str(np.std(D[1])))
-log.info('min :'+str(np.min(D[1])))
-log.info('max :'+str(np.max(D[1])))
-log.info('axe D3 :')
-log.info('mean :'+str(np.mean(D[2])))
-log.info('std :'+str(np.std(D[2])))
-log.info('min :'+str(np.min(D[2])))
-log.info('max :'+str(np.max(D[2])))
 
 
 
